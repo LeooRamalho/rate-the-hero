@@ -1,1 +1,1 @@
-export const Details = () => <div>Hello, tela de details !</div>;
+export const Details = () => (<div>Hello, tela de details !</div>);
