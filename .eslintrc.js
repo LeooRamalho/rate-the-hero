@@ -20,5 +20,6 @@ module.exports = {
   'rules': {
     'react/react-in-jsx-scope': 'off',
     'max-len': 'warn',
+    'no-tabs': 'off',
   },
 };
