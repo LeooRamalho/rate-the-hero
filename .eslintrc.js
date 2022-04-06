@@ -20,6 +20,8 @@ module.exports = {
   'rules': {
     'react/react-in-jsx-scope': 'off',
     'max-len': 'warn',
+    'no-unused-vars': 'warn',
     'no-tabs': 'off',
+    'require-jsdoc': 'off',
   },
 };

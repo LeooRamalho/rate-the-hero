@@ -1,10 +1,13 @@
-import React from 'react';
+import {useState, useEffect} from 'react';
 import styled from 'styled-components';
+import useAxios from 'axios-hooks';
 import {Flex, Box} from 'reflexbox';
+import {Alert} from '../components/common/Alert';
 import {Button} from '../components/common/Button';
 import {SearchField} from '../components/common/SearchField';
 import {HeroCard} from '../components/HeroCard';
 import {Spaces} from '../shared/DesignTokens';
+import {HeroCardLoader} from '../components/HeroCard/HeroCardLoader';
 
 const HeroesGrid = styled(Box)`
 	display: grid;
@@ -17,30 +20,35 @@ const HeroesGrid = styled(Box)`
 `;
 
 export const Search = () => {
-  const initialState = [
-    {
-      secretIdentity: 'Terry McGinnis',
-      name: 'Batman',
-      picture:
-				'https://www.superherodb.com/pictures2/portraits/10/100/10441.jpg',
-      universe: 'DC Comics',
-    },
-    {
-      secretIdentity: 'Bruce Wayne',
-      name: 'Batman',
-      picture:
-				'https://www.superherodb.com/pictures2/portraits/10/100/639.jpg',
-      universe: 'DC Comics',
-    },
-    {
-      secretIdentity: 'Dick Grayson',
-      name: 'Batman II',
-      picture:
-				'https://www.superherodb.com/pictures2/portraits/10/100/1496.jpg',
-      universe: 'DC Comics',
-    },
-  ];
-  const [heroes] = React.useState(initialState);
+  const [search, setSearch] = useState('captain');
+  const [doSearch, setDoSearch] = useState(false);
+  const [{data: heroes, loading: isLoadingHeroes}, updateHeroes] = useAxios(
+      `/search/${search}`,
+      {manual: true},
+  );
+
+  useEffect(() => {
+    updateHeroes();
+  }, []);
+
+  useEffect(() => {
+    if (doSearch) {
+      updateHeroes()
+          .then(() => setDoSearch(false));
+    }
+  }, [doSearch]);
+
+  const handleChangeSearch = ({target: {value}}) => {
+    setSearch(value);
+  };
+  const handleKeyUpSearch = ({key}) => {
+    if (key === 'Enter') {
+      handleSearch();
+    }
+  };
+  const handleSearch = () => {
+    setDoSearch(true);
+  };
 
   return (
     <>
@@ -52,26 +60,52 @@ export const Search = () => {
         mb={[Spaces.TWO, Spaces.FOUR]}
       >
         <Box flexGrow="1">
-          <SearchField placeholder="Digite um nome de herói ou heroína" />
+          <SearchField
+            value={search}
+            onChange={handleChangeSearch}
+            onKeyUp={handleKeyUpSearch}
+            placeholder="Digite um nome de herói ou heroína"
+          />
         </Box>
         <Box ml={Spaces.TWO}>
-          <Button>Buscar</Button>
+          <Button onClick={handleSearch}>Buscar</Button>
         </Box>
       </Flex>
+      {!isLoadingHeroes && heroes && heroes.error ?
+      (
+        <Box px={[Spaces.ONE, Spaces.TWO]} pb={[Spaces.ONE, Spaces.TWO]}>
+          <Alert type="info">
+            Nenhum registro de herói ou heroína foi encontrado.
+          </Alert>
+        </Box>
+      ) : (
       <HeroesGrid
         px={[Spaces.ONE, Spaces.TWO]}
         pb={[Spaces.ONE, Spaces.TWO]}
       >
-        {heroes.map((hero, i) => (
+        {isLoadingHeroes &&
+        <>
+          <HeroCardLoader/>
+          <HeroCardLoader/>
+          <HeroCardLoader/>
+          <HeroCardLoader/>
+          <HeroCardLoader/>
+          <HeroCardLoader/>
+          <HeroCardLoader/>
+          <HeroCardLoader/>
+        </>
+        }
+        {!isLoadingHeroes && heroes && heroes.results.map((hero) => (
           <HeroCard
-            key={i}
-            secretIdentity={hero.secretIdentity}
+            key={hero.id}
+            secretIdentity={hero.biography['full-name']}
             name={hero.name}
-            picture={hero.picture}
-            universe={hero.universe}
+            picture={hero.image.url}
+            universe={hero.biography.publisher}
           />
         ))}
       </HeroesGrid>
+      )}
     </>
   );
 };
