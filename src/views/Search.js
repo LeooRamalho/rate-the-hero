@@ -1,7 +1,9 @@
 import {useState, useEffect} from 'react';
+import {useHeroes} from '../components/hooks/useHeroes';
+
 import styled from 'styled-components';
-import useAxios from 'axios-hooks';
 import {Flex, Box} from 'reflexbox';
+
 import {Alert} from '../components/common/Alert';
 import {Button} from '../components/common/Button';
 import {SearchField} from '../components/common/SearchField';
@@ -22,14 +24,7 @@ const HeroesGrid = styled(Box)`
 export const Search = () => {
   const [search, setSearch] = useState('captain');
   const [doSearch, setDoSearch] = useState(false);
-  const [{data: heroes, loading: isLoadingHeroes}, updateHeroes] = useAxios(
-      `/search/${search}`,
-      {manual: true},
-  );
-
-  useEffect(() => {
-    updateHeroes();
-  }, []);
+  const {heroes, isLoadingHeroes, updateHeroes} = useHeroes(search);
 
   useEffect(() => {
     if (doSearch) {
@@ -98,6 +93,7 @@ export const Search = () => {
         {!isLoadingHeroes && heroes && heroes.results.map((hero) => (
           <HeroCard
             key={hero.id}
+            id={hero.id}
             secretIdentity={hero.biography['full-name']}
             name={hero.name}
             picture={hero.image.url}
